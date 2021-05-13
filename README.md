@@ -1,5 +1,4 @@
-certbot-dns-desec
-=================
+# certbot-dns-desec
 
 ⚠ This plugin is under development, API and CLI might change! ⚠
 
@@ -8,48 +7,39 @@ deSEC_ DNS Authenticator plugin for Certbot
 This plugin automates the process of completing a ``dns-01`` challenge by
 creating, and subsequently removing, TXT records using the deSEC DNS API.
 
-Configuration of deSEC
-----------------------
+## Configuration of deSEC
 
 Log in at deSEC_ and create the domain you would like to use and a token for DNS management.
 
 .. _deSEC: https://desec.io/
 .. _certbot: https://certbot.eff.org/
 
-Installation
-------------
+## Installation
 
-::
+This certbot plugin can be installed using `pip`:
 
-    pip install certbot-dns-desec
+    python3 -m pip install certbot-dns-desec
 
 
-Named Arguments
----------------
+## Command Line Interface
 
 To start using DNS authentication with deSEC, pass the following arguments on
 certbot's command line:
 
-============================================================= ==============================================
-``--authenticator dns-desec``                                 select the authenticator plugin (Required)
-
-``--dns-desec-credentials``                                   deSEC API token INI file. (Required)
-
-``--dns-desec-propagation-seconds``                           | waiting time for DNS to propagate before asking
-                                                              | the ACME server to verify the DNS record.
-                                                              | (Default: 5)
-============================================================= ==============================================
+1. ``--authenticator dns-desec`` Selects the authenticator plugin.
+1. ``--dns-desec-credentials <file>`` Specifies the file holding the deSEC API credentials (required, see below).
+1. ``--dns-desec-propagation-seconds`` Waiting time for DNS to propagate before asking the ACME server to verify the
+    DNS record (default 5).
 
 
-Credentials
------------
+## deSEC API Credentials
 
 An example ``credentials.ini`` file:
 
-.. code-block:: ini
-
    dns_desec_token    = token
-   dns_desec_endpoint = https://desec.io/api/v1/
+
+Additionally, the URL of the deSEC API can be specified using the `dns_desec_endpoint` configuration option.
+`https://desec.io/api/v1/` is the default.
 
 The path to this file can be provided interactively or using the
 ``--dns-desec-credentials`` command-line argument. Certbot
@@ -71,13 +61,9 @@ including for renewal, and cannot be silenced except by addressing the issue
 (e.g., by using a command like ``chmod 600`` to restrict access to the file).
 
 
-Examples
---------
+## Example Usage
 
-To acquire a single certificate for both ``example.com`` and
-``*.example.com``:
-
-.. code-block:: bash
+To acquire a single certificate for both ``example.com`` and ``*.example.com``:
 
    certbot certonly \
      --authenticator dns-desec \
@@ -89,14 +75,13 @@ To acquire a single certificate for both ``example.com`` and
      -d '*.example.com'
 
 
-Development and Testing
------------------------
+## Development and Testing
 
-To test this, install the virtual environment (venv) for this repository. Register a domain `$DOMAIN` with desec.io,
-and obtain a DNS management token `$TOKEN`. Then run::
+To test this, install the virtual environment (venv) for this repository and activate it.
+Register a domain `$DOMAIN` with desec.io, and obtain a DNS management token `$TOKEN`. Then run
 
     python3 -m pip install .
-    TOKEN=...
+    TOKEN=token-you-obtained-from-desec-io
     DOMAIN=domain-you-registered-at-desec-io
     EMAIL=youremail@example.com
     echo "dns_desec_token = $TOKEN" > desec-secret.ini
@@ -114,8 +99,7 @@ and obtain a DNS management token `$TOKEN`. Then run::
         certonly
 
 
-Maintainer: Prepare New Release
--------------------------------
+## Maintenance: Prepare New Release
 
 1. Make sure tests are okay (see GitHub actions)
 1. Commit all changes
