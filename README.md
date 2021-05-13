@@ -33,7 +33,7 @@ certbot's command line:
 
 An example ``credentials.ini`` file:
 
-   dns_desec_token    = token
+    dns_desec_token = token
 
 Additionally, the URL of the deSEC API can be specified using the `dns_desec_endpoint` configuration option.
 `https://desec.io/api/v1/` is the default.
