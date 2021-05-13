@@ -1,0 +1,4 @@
+[flake8]
+ignore =
+    # E501: line longer than 79 chars
+    E501,

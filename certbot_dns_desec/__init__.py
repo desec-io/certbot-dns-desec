@@ -1,45 +1,43 @@
 """
-The `~certbot_dns_ispconfig.dns_ispconfig` plugin automates the process of
+The `~certbot_dns_desec.dns_desec` plugin automates the process of
 completing a ``dns-01`` challenge (`~acme.challenges.DNS01`) by creating, and
-subsequently removing, TXT records using the ISPConfig REST API.
+subsequently removing, TXT records using the deSEC REST API.
 
 
 Named Arguments
 ---------------
 
 ========================================  =====================================
-``--dns-ispconfig-credentials``           ISPConfig Remote API credentials_
+``--dns-desec-credentials``               deSEC Remote API credentials_
                                           INI file. (Required)
-``--dns-ispconfig-propagation-seconds``   The number of seconds to wait for DNS
+``--dns-desec-propagation-seconds``       The number of seconds to wait for DNS
                                           to propagate before asking the ACME
                                           server to verify the DNS record.
-                                          (Default: 120)
+                                          (Default: 120)  # TODO default, needed?
 ========================================  =====================================
 
 
 Credentials
 -----------
 
-Use of this plugin requires a configuration file containing ISPConfig Remote API
-credentials, obtained from your DNSimple
-`System > Remote Users`.
+Use of this plugin requires a configuration file containing a deSEC DNS API
+access token obtained from the deSEC website.
 
 .. code-block:: ini
    :name: credentials.ini
    :caption: Example credentials file:
 
-   # ISPCONFIG API credentials used by Certbot
-   dns_ispconfig_username = myispremoteuser
-   dns_ispconfig_password = mysecretpassword
-   dns_ispconfig_endpoint = https://localhost:8080
+   # deSEC API token used by Certbot
+   dns_desec_token = asdf
+   dns_desec_endpoint = https://localhost:8080
 
 The path to this file can be provided interactively or using the
-``--dns-ispconfig-credentials`` command-line argument. Certbot records the path
+``--dns-desec-credentials`` command-line argument. Certbot records the path
 to this file for use during renewal, but does not store the file's contents.
 
 .. caution::
    You should protect these API credentials as you would a password. Users who
-   can read this file can use these credentials to issue arbitrary API calls on
+   can read this file can use these credentials to issue API calls on
    your behalf. Users who can cause Certbot to run using these credentials can
    complete a ``dns-01`` challenge to acquire new certificates or revoke
    existing certificates for associated domains, even if those domains aren't
@@ -59,8 +57,8 @@ Examples
    :caption: To acquire a certificate for ``example.com``
 
    certbot certonly \\
-     --dns-ispconfig \\
-     --dns-ispconfig-credentials ~/.secrets/certbot/ispconfig.ini \\
+     --dns-desec \\
+     --dns-desec-credentials ~/.secrets/certbot/desec.ini \\
      -d example.com
 
 .. code-block:: bash
@@ -68,8 +66,8 @@ Examples
              ``www.example.com``
 
    certbot certonly \\
-     --dns-ispconfig \\
-     --dns-ispconfig-credentials ~/.secrets/certbot/ispconfig.ini \\
+     --dns-desec \\
+     --dns-desec-credentials ~/.secrets/certbot/desec.ini \\
      -d example.com \\
      -d www.example.com
 
@@ -78,9 +76,9 @@ Examples
              for DNS propagation
 
    certbot certonly \\
-     --dns-ispconfig \\
-     --dns-ispconfig-credentials ~/.secrets/certbot/ispconfig.ini \\
-     --dns-ispconfig-propagation-seconds 240 \\
+     --dns-desec \\
+     --dns-desec-credentials ~/.secrets/certbot/desec.ini \\
+     --dns-desec-propagation-seconds 240 \\  # TODO
      -d example.com
 
 """
