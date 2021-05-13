@@ -22,6 +22,7 @@ class Authenticator(dns_common.DNSAuthenticator):
 
     description = "Obtain certificates using a DNS TXT record (if you are using deSEC.io for DNS)."
     ttl = 60
+    DEFAULT_ENDPOINT = "https://desec.io/api/v1/"
 
     def __init__(self, *args, **kwargs):
         super(Authenticator, self).__init__(*args, **kwargs)
@@ -64,7 +65,7 @@ class Authenticator(dns_common.DNSAuthenticator):
 
     def _get_desec_client(self):
         return _DesecConfigClient(
-            self.credentials.conf("endpoint") or "https://desec.io/api/v1/",
+            self.credentials.conf("endpoint") or self.DEFAULT_ENDPOINT,
             self.credentials.conf("token"),
         )
 
