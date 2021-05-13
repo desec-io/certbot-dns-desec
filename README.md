@@ -62,14 +62,14 @@ including for renewal, and cannot be silenced except by addressing the issue
 
 To acquire a single certificate for both ``example.com`` and ``*.example.com``:
 
-   certbot certonly \
-     --authenticator dns-desec \
-     --dns-desec-credentials /etc/letsencrypt/.secrets/domain.tld.ini \
-     --server https://acme-v02.api.letsencrypt.org/directory \
-     --agree-tos \
-     --rsa-key-size 4096 \
-     -d 'example.com' \
-     -d '*.example.com'
+    certbot certonly \
+         --authenticator dns-desec \
+         --dns-desec-credentials /etc/letsencrypt/.secrets/domain.tld.ini \
+         --server https://acme-v02.api.letsencrypt.org/directory \
+         --agree-tos \
+         --rsa-key-size 4096 \
+         -d 'example.com' \
+         -d '*.example.com'
 
 
 ## Development and Testing
