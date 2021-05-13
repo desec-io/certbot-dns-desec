@@ -47,24 +47,16 @@ class AuthenticatorTest(
     def test_perform(self):
         self.auth.perform([self.achall])
 
-        expected = [
-            mock.call.get_txt_rrset(DOMAIN, "_acme-challenge"),
-            mock.ANY, mock.ANY, mock.ANY, mock.ANY,  # TODO make nice
-            mock.call.set_txt_rrset(DOMAIN, "_acme-challenge", mock.ANY, mock.ANY),
-        ]
-        self.assertEqual(expected, self.mock_client.mock_calls)
+        self.mock_client.get_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge")
+        self.mock_client.set_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge", mock.ANY, mock.ANY)
 
     def test_cleanup(self):
         # _attempt_cleanup | pylint: disable=protected-access
         self.auth._attempt_cleanup = True
         self.auth.cleanup([self.achall])
 
-        expected = [
-            mock.call.get_txt_rrset(DOMAIN, "_acme-challenge"),
-            mock.ANY, mock.ANY, mock.ANY, mock.ANY,  # TODO make nice
-            mock.call.set_txt_rrset(DOMAIN, "_acme-challenge", mock.ANY, mock.ANY),
-        ]
-        self.assertEqual(expected, self.mock_client.mock_calls)
+        self.mock_client.get_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge")
+        self.mock_client.set_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge", mock.ANY, mock.ANY)
 
 
 class DesecConfigClientTest(unittest.TestCase):
