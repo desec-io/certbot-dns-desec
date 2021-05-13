@@ -1,5 +1,8 @@
 # certbot-dns-desec
 
+![main branch CI test status](https://github.com/desec-io/certbot-dns-desec/workflows/Tests/badge.svg?branch=main)
+[![pypi badge](https://img.shields.io/pypi/v/certbot-dns-desec.svg)](https://pypi.org/project/certbot-dns-desec/)
+
 ⚠ This plugin is under development, API and CLI might change! ⚠
 
 [deSEC](https://desec.io/) DNS Authenticator plugin for [Certbot](https://certbot.eff.org/)
