@@ -1,6 +1,8 @@
 certbot-dns-desec
 =================
 
+⚠ This plugin is under development, API and CLI might change! ⚠
+
 deSEC_ DNS Authenticator plugin for Certbot
 
 This plugin automates the process of completing a ``dns-01`` challenge by
@@ -25,22 +27,18 @@ Installation
 Named Arguments
 ---------------
 
-To start using DNS authentication for deSEC, pass the following arguments on
+To start using DNS authentication with deSEC, pass the following arguments on
 certbot's command line:
 
 ============================================================= ==============================================
 ``--authenticator dns-desec``                                 select the authenticator plugin (Required)
 
-``--dns-desec-credentials``                                   deSEC API token
-                                                              INI file. (Required)
+``--dns-desec-credentials``                                   deSEC API token INI file. (Required)
 
 ``--dns-desec-propagation-seconds``                           | waiting time for DNS to propagate before asking
                                                               | the ACME server to verify the DNS record.
-                                                              | (Default: 5, Recommended: >= 600)  # TODO
+                                                              | (Default: 5)
 ============================================================= ==============================================
-
-(Note that the verbose and seemingly redundant ``certbot-dns-desec:`` prefix
-is currently imposed by certbot for external plugins.)
 
 
 Credentials
@@ -50,11 +48,11 @@ An example ``credentials.ini`` file:
 
 .. code-block:: ini
 
-   certbot_dns_desec:dns_desec_token    = token
-   certbot_dns_desec:dns_desec_endpoint = https://localhost:8080/remote/json.php
+   dns_desec_token    = token
+   dns_desec_endpoint = https://desec.io/api/v1/
 
 The path to this file can be provided interactively or using the
-``--certbot-dns-desec:dns-desec-credentials`` command-line argument. Certbot
+``--dns-desec-credentials`` command-line argument. Certbot
 records the path to this file for use during renewal, but does not store the
 file's contents.
 
@@ -77,14 +75,13 @@ Examples
 --------
 
 To acquire a single certificate for both ``example.com`` and
-``*.example.com``, waiting 900 seconds for DNS propagation:  # TODO waiting time
+``*.example.com``:
 
 .. code-block:: bash
 
    certbot certonly \
-     --authenticator certbot-dns-desec:dns-desec \
-     --certbot-dns-desec:dns-desec-credentials /etc/letsencrypt/.secrets/domain.tld.ini \
-     --certbot-dns-desec:dns-desec-propagation-seconds 900 \
+     --authenticator dns-desec \
+     --dns-desec-credentials /etc/letsencrypt/.secrets/domain.tld.ini \
      --server https://acme-v02.api.letsencrypt.org/directory \
      --agree-tos \
      --rsa-key-size 4096 \
@@ -92,47 +89,11 @@ To acquire a single certificate for both ``example.com`` and
      -d '*.example.com'
 
 
-Docker
-------
-
-In order to create a docker container with a certbot-dns-desec installation,
-create an empty directory with the following ``Dockerfile``:
-
-.. code-block:: docker
-
-    FROM certbot/certbot
-    RUN pip install certbot-dns-desec
-
-Proceed to build the image::
-
-    docker build -t certbot/dns-desec .
-
-Once that's finished, the application can be run as follows::
-
-    docker run --rm \
-       -v /var/lib/letsencrypt:/var/lib/letsencrypt \
-       -v /etc/letsencrypt:/etc/letsencrypt \
-       --cap-drop=all \
-       certbot/dns-desec certonly \
-       --authenticator dns-desec \
-       --dns-desec-propagation-seconds 900 \
-       --dns-desec-credentials \
-           /etc/letsencrypt/.secrets/domain.tld.ini \
-       --no-self-upgrade \
-       --keep-until-expiring --non-interactive --expand \
-       --server https://acme-v02.api.letsencrypt.org/directory \
-       -d example.com -d '*.example.com'
-
-It is suggested to secure the folder as follows::
-chown root:root /etc/letsencrypt/.secrets
-chmod 600 /etc/letsencrypt/.secrets
-
 Development and Testing
 -----------------------
 
-To test this, install the virtual environment (venv) for this repository. Register a domain `$DOMAIN` with desec.io.
-# TODO token, desec-secrets.ini
-Inside the venv, run::
+To test this, install the virtual environment (venv) for this repository. Register a domain `$DOMAIN` with desec.io,
+and obtain a DNS management token `$TOKEN`. Then run::
 
     python3 -m pip install .
     TOKEN=...
@@ -168,4 +129,4 @@ Maintainer: Prepare New Release
     1. tag: `git push origin v$RELEASE`
 1. Set environment variables `GITHUB_TOKEN` to a GitHub token, `TWINE_USERNAME` and `TWINE_PASSWORD` to PyPi
     credentials.
-1. Publish using `python3 -m publish nils-wisiol certbot-dns-desec`
+1. Publish using `python3 -m publish desec-io certbot-dns-desec`
