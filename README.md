@@ -2,17 +2,14 @@
 
 ⚠ This plugin is under development, API and CLI might change! ⚠
 
-deSEC_ DNS Authenticator plugin for Certbot
+[deSEC](https://desec.io/) DNS Authenticator plugin for [Certbot](https://certbot.eff.org/)
 
 This plugin automates the process of completing a ``dns-01`` challenge by
 creating, and subsequently removing, TXT records using the deSEC DNS API.
 
 ## Configuration of deSEC
 
-Log in at deSEC_ and create the domain you would like to use and a token for DNS management.
-
-.. _deSEC: https://desec.io/
-.. _certbot: https://certbot.eff.org/
+Log in at [deSEC](https://desec.io/) and create the domain you would like to use and a token for DNS management.
 
 ## Installation
 
