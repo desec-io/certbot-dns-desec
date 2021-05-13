@@ -24,7 +24,7 @@ setup(
     version=version,
     description="deSEC DNS Authenticator plugin for Certbot",
     long_description=long_description,
-    long_description_content_type="text/x-rst",
+    long_description_content_type="text/markdown",
     url="https://github.com/desec-io/certbot-dns-desec",
     author="Nils Wisiol",
     author_email="nils@desec.io",
