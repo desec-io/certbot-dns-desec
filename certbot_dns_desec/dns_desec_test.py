@@ -44,7 +44,8 @@ class AuthenticatorTest(
         # _get_desec_client | pylint: disable=protected-access
         self.auth._get_desec_client = mock.MagicMock(return_value=self.mock_client)
 
-    def test_perform(self):
+    @test_util.patch_get_utility()
+    def test_perform(self, unused_mock_get_utility):
         self.auth.perform([self.achall])
 
         self.mock_client.get_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge")
