@@ -41,6 +41,7 @@ class AuthenticatorTest(
         self.auth = Authenticator(self.config, "desec")
 
         self.mock_client = mock.MagicMock()
+        self.mock_client.get_txt_rrset.return_value = set()
         # _get_desec_client | pylint: disable=protected-access
         self.auth._get_desec_client = mock.MagicMock(return_value=self.mock_client)
 

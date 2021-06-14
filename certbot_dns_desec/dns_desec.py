@@ -51,17 +51,19 @@ class Authenticator(dns_common.DNSAuthenticator):
             },
         )
 
+    def _desec_work(self, domain, validation_name, validation, set_operator):
+        subname = validation_name.split(domain)[0].rstrip('.')
+        records = self._get_desec_client().get_txt_rrset(domain, subname)
+        records = list(set_operator(records, {f'"{validation}"'}))
+        self._get_desec_client().set_txt_rrset(domain, subname, records, self.ttl)
+
     def _perform(self, domain, validation_name, validation):
         logger.debug(f"Authenticator._perform: {domain}, {validation_name}, {validation}")
-        subname = validation_name.split(domain)[0].rstrip('.')  # TODO code duplication
-        records = self._get_desec_client().get_txt_rrset(domain, subname)
-        self._get_desec_client().set_txt_rrset(domain, subname, list(records | {f'"{validation}"'}), self.ttl)
+        self._desec_work(domain, validation_name, validation, set.union)
 
     def _cleanup(self, domain, validation_name, validation):
         logger.debug(f"Authenticator._cleanup: {domain}, {validation_name}, {validation}")
-        subname = validation_name.split(domain)[0].rstrip('.')
-        records = self._get_desec_client().get_txt_rrset(domain, subname)
-        self._get_desec_client().set_txt_rrset(domain, subname, list(records - {f'"{validation}"'}), self.ttl)
+        self._desec_work(domain, validation_name, validation, set.intersection)
 
     def _get_desec_client(self):
         return _DesecConfigClient(
