@@ -93,7 +93,7 @@ class _DesecConfigClient(object):
         if response.status_code == 404:
             return set()
 
-        self._check_response_status(response, domain)
+        self._check_response_status(response, domain=domain)
         return set(self._response_json(response).get('records', set()))
 
     def set_txt_rrset(self, domain, subname, rrset, ttl):
@@ -103,15 +103,15 @@ class _DesecConfigClient(object):
                 {"subname": subname, "type": "TXT", "ttl": ttl, "records": rrset},
             ]),
         )
-        return self._check_response_status(response, domain)
+        return self._check_response_status(response, domain=domain)
 
-    def _check_response_status(self, response, domain):
+    def _check_response_status(self, response, **kwargs):
         if 200 <= response.status_code <= 299:
             return
         elif response.status_code in [401, 403]:
             raise errors.PluginError(f"Could not authenticate against deSEC API: {response.content}")
         elif response.status_code == 404:
-            raise errors.PluginError(f"Could not find domain '{domain}': {response.content}")
+            raise errors.PluginError(f"Not found ({kwargs}): {response.content}")
         elif response.status_code == 429:
             raise errors.PluginError(f"deSEC throttled your request. Please run certbot for various domains at "
                                      f"different times. {response.content}")
