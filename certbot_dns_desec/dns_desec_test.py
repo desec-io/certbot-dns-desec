@@ -41,6 +41,7 @@ class AuthenticatorTest(
         self.auth = Authenticator(self.config, "desec")
 
         self.mock_client = mock.MagicMock()
+        self.mock_client.get_authoritative_zone.return_value = DOMAIN
         self.mock_client.get_txt_rrset.return_value = set()
         # _get_desec_client | pylint: disable=protected-access
         self.auth._get_desec_client = mock.MagicMock(return_value=self.mock_client)
@@ -49,6 +50,7 @@ class AuthenticatorTest(
     def test_perform(self, unused_mock_get_utility):
         self.auth.perform([self.achall])
 
+        self.mock_client.get_authoritative_zone.assert_called_once_with(f'_acme-challenge.{DOMAIN}')
         self.mock_client.get_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge")
         self.mock_client.set_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge", mock.ANY, mock.ANY)
 
@@ -57,6 +59,7 @@ class AuthenticatorTest(
         self.auth._attempt_cleanup = True
         self.auth.cleanup([self.achall])
 
+        self.mock_client.get_authoritative_zone.assert_called_once_with(f'_acme-challenge.{DOMAIN}')
         self.mock_client.get_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge")
         self.mock_client.set_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge", mock.ANY, mock.ANY)
 
@@ -89,6 +92,23 @@ class DesecConfigClientTest(unittest.TestCase):
             additional_matcher=additional_matcher,
             status_code=status,
         )
+
+    def test_get_authoritative_zone(self):
+        self._register_response(
+            url=f"{FAKE_ENDPOINT}/domains/?owns_qname=_acme-challenge.{DOMAIN}",
+            response=[
+                {
+                    "created": "2021-06-14T14:30:35.463899Z",
+                    "minimum_ttl": 3600,
+                    "name": 'name.to.be.extracted',
+                    "published": "2021-06-14T14:30:35.772212Z",
+                    "touched": "2021-06-14T14:30:35.772212Z"
+                }
+            ]
+        )
+
+        zone = self.client.get_authoritative_zone(f"_acme-challenge.{DOMAIN}")
+        self.assertEqual(zone, 'name.to.be.extracted')
 
     def test_set_txt_rrset(self):
         self._register_response(

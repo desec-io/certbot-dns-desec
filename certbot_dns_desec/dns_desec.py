@@ -52,10 +52,12 @@ class Authenticator(dns_common.DNSAuthenticator):
         )
 
     def _desec_work(self, domain, validation_name, validation, set_operator):
-        subname = validation_name.split(domain)[0].rstrip('.')
-        records = self._get_desec_client().get_txt_rrset(domain, subname)
+        client = self._get_desec_client()
+        zone = client.get_authoritative_zone(validation_name)
+        subname = validation_name.rsplit(zone, 1)[0].rstrip('.')
+        records = client.get_txt_rrset(zone, subname)
         records = list(set_operator(records, {f'"{validation}"'}))
-        self._get_desec_client().set_txt_rrset(domain, subname, records, self.ttl)
+        client.set_txt_rrset(zone, subname, records, self.ttl)
 
     def _perform(self, domain, validation_name, validation):
         logger.debug(f"Authenticator._perform: {domain}, {validation_name}, {validation}")
@@ -84,6 +86,15 @@ class _DesecConfigClient(object):
         self.session = requests.Session()
         self.session.headers["Authorization"] = f"Token {token}"
         self.session.headers["Content-Type"] = "application/json"
+
+    def get_authoritative_zone(self, qname):
+        response = self.session.get(url=f"{self.endpoint}/domains/?owns_qname={qname}")
+        self._check_response_status(response)
+        data = self._response_json(response)
+        try:
+            return data[0]['name']
+        except IndexError:
+            raise errors.PluginError(f"Could not find suitable domain in your account (did you create it?): {qname}")
 
     def get_txt_rrset(self, domain, subname):
         response = self.session.get(
