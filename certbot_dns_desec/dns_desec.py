@@ -21,7 +21,6 @@ class Authenticator(dns_common.DNSAuthenticator):
     """
 
     description = "Obtain certificates using a DNS TXT record (if you are using deSEC.io for DNS)."
-    ttl = 3600
     DEFAULT_ENDPOINT = "https://desec.io/api/v1/"
 
     def __init__(self, *args, **kwargs):
@@ -54,10 +53,10 @@ class Authenticator(dns_common.DNSAuthenticator):
     def _desec_work(self, domain, validation_name, validation, set_operator):
         client = self._get_desec_client()
         zone = client.get_authoritative_zone(validation_name)
-        subname = validation_name.rsplit(zone, 1)[0].rstrip('.')
+        subname = validation_name.rsplit(zone['name'], 1)[0].rstrip('.')
         records = client.get_txt_rrset(zone, subname)
         records = list(set_operator(records, {f'"{validation}"'}))
-        client.set_txt_rrset(zone, subname, records, self.ttl)
+        client.set_txt_rrset(zone, subname, records)
 
     def _perform(self, domain, validation_name, validation):
         logger.debug(f"Authenticator._perform: {domain}, {validation_name}, {validation}")
@@ -92,11 +91,12 @@ class _DesecConfigClient(object):
         self._check_response_status(response)
         data = self._response_json(response)
         try:
-            return data[0]['name']
+            return data[0]
         except IndexError:
             raise errors.PluginError(f"Could not find suitable domain in your account (did you create it?): {qname}")
 
-    def get_txt_rrset(self, domain, subname):
+    def get_txt_rrset(self, zone, subname):
+        domain = zone['name']
         response = self.session.get(
             url=f"{self.endpoint}/domains/{domain}/rrsets/{subname}/TXT",
         )
@@ -107,11 +107,12 @@ class _DesecConfigClient(object):
         self._check_response_status(response, domain=domain)
         return set(self._response_json(response).get('records', set()))
 
-    def set_txt_rrset(self, domain, subname, rrset, ttl):
+    def set_txt_rrset(self, zone, subname, records):
+        domain = zone['name']
         response = self.session.put(
             url=f"{self.endpoint}/domains/{domain}/rrsets/",
             data=json.dumps([
-                {"subname": subname, "type": "TXT", "ttl": ttl, "records": rrset},
+                {"subname": subname, "type": "TXT", "ttl": zone['minimum_ttl'], "records": records},
             ]),
         )
         return self._check_response_status(response, domain=domain)

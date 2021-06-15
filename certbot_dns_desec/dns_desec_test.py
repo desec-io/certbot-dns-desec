@@ -39,9 +39,10 @@ class AuthenticatorTest(
         )  # don't wait during tests
 
         self.auth = Authenticator(self.config, "desec")
+        self.mock_zone = {'name': DOMAIN, 'minimum_ttl': 42}
 
         self.mock_client = mock.MagicMock()
-        self.mock_client.get_authoritative_zone.return_value = DOMAIN
+        self.mock_client.get_authoritative_zone.return_value = self.mock_zone
         self.mock_client.get_txt_rrset.return_value = set()
         # _get_desec_client | pylint: disable=protected-access
         self.auth._get_desec_client = mock.MagicMock(return_value=self.mock_client)
@@ -51,8 +52,8 @@ class AuthenticatorTest(
         self.auth.perform([self.achall])
 
         self.mock_client.get_authoritative_zone.assert_called_once_with(f'_acme-challenge.{DOMAIN}')
-        self.mock_client.get_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge")
-        self.mock_client.set_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge", mock.ANY, mock.ANY)
+        self.mock_client.get_txt_rrset.assert_called_once_with(self.mock_zone, "_acme-challenge")
+        self.mock_client.set_txt_rrset.assert_called_once_with(self.mock_zone, "_acme-challenge", mock.ANY)
 
     def test_cleanup(self):
         # _attempt_cleanup | pylint: disable=protected-access
@@ -60,13 +61,13 @@ class AuthenticatorTest(
         self.auth.cleanup([self.achall])
 
         self.mock_client.get_authoritative_zone.assert_called_once_with(f'_acme-challenge.{DOMAIN}')
-        self.mock_client.get_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge")
-        self.mock_client.set_txt_rrset.assert_called_once_with(DOMAIN, "_acme-challenge", mock.ANY, mock.ANY)
+        self.mock_client.get_txt_rrset.assert_called_once_with(self.mock_zone, "_acme-challenge")
+        self.mock_client.set_txt_rrset.assert_called_once_with(self.mock_zone, "_acme-challenge", mock.ANY)
 
 
 class DesecConfigClientTest(unittest.TestCase):
     record_name = "foo"
-    record_content = "bar"
+    record_content = ["bar"]
     record_ttl = 42
 
     def setUp(self):
@@ -108,7 +109,8 @@ class DesecConfigClientTest(unittest.TestCase):
         )
 
         zone = self.client.get_authoritative_zone(f"_acme-challenge.{DOMAIN}")
-        self.assertEqual(zone, 'name.to.be.extracted')
+        self.assertEqual(zone['name'], 'name.to.be.extracted')
+        self.assertEqual(zone['minimum_ttl'], 3600)
 
     def test_set_txt_rrset(self):
         self._register_response(
@@ -128,7 +130,7 @@ class DesecConfigClientTest(unittest.TestCase):
         )
 
         self.client.set_txt_rrset(
-            DOMAIN, self.record_name, self.record_content, self.record_ttl
+            {'name': DOMAIN, 'minimum_ttl': self.record_ttl}, self.record_name, self.record_content
         )
 
     def test_set_txt_rrset_fail_to_find_domain(self):
@@ -139,7 +141,7 @@ class DesecConfigClientTest(unittest.TestCase):
         )
         with self.assertRaises(errors.PluginError):
             self.client.set_txt_rrset(
-                DOMAIN, self.record_name, self.record_content, self.record_ttl
+                {'name': DOMAIN, 'minimum_ttl': self.record_ttl}, self.record_name, self.record_content
             )
 
     def test_set_txt_rrset_fail_to_authenticate(self):
@@ -150,7 +152,7 @@ class DesecConfigClientTest(unittest.TestCase):
         )
         with self.assertRaises(errors.PluginError):
             self.client.set_txt_rrset(
-                DOMAIN, self.record_name, self.record_content, self.record_ttl
+                {'name': DOMAIN, 'minimum_ttl': self.record_ttl}, self.record_name, self.record_content
             )
 
 
