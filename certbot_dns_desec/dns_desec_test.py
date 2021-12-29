@@ -1,11 +1,11 @@
 """Tests for certbot_dns_desec.dns_desec."""
 
+import json
 import unittest
+from unittest.mock import patch
 
 import mock
-import json
 import requests_mock
-
 from certbot import errors
 from certbot.compat import os
 from certbot.plugins import dns_test_common
@@ -149,6 +149,61 @@ class DesecConfigClientTest(unittest.TestCase):
             url=f"{FAKE_ENDPOINT}/domains/{DOMAIN}/rrsets/",
             response={"detail": "Invalid token."},
             status=403,
+        )
+        with self.assertRaises(errors.PluginError):
+            self.client.set_txt_rrset(
+                {'name': DOMAIN, 'minimum_ttl': self.record_ttl}, self.record_name, self.record_content
+            )
+
+    @patch('time.sleep', return_value=None)
+    def test_set_txt_rrset_throttling_retry(self, patched_time_sleep):
+        self.adapter.register_uri(
+            'PUT',
+            f"{FAKE_ENDPOINT}/domains/{DOMAIN}/rrsets/",
+            [
+                dict(status_code=429, headers={'Retry-After': '2'}),
+                dict(status_code=200),
+            ]
+        )
+        self.client.set_txt_rrset(
+            {'name': DOMAIN, 'minimum_ttl': self.record_ttl}, self.record_name, self.record_content
+        )
+        patched_time_sleep.assert_called_once_with(2)
+
+    @patch('time.sleep', return_value=None)
+    def test_set_txt_rrset_throttling_retry_fail(self, patched_time_sleep):
+        self.adapter.register_uri(
+            'PUT',
+            f"{FAKE_ENDPOINT}/domains/{DOMAIN}/rrsets/",
+            [
+                dict(status_code=429, headers={'Retry-After': '2'}),
+                dict(status_code=429, headers={'Retry-After': '2'}),
+            ]
+        )
+        with self.assertRaises(errors.PluginError):
+            self.client.set_txt_rrset(
+                {'name': DOMAIN, 'minimum_ttl': self.record_ttl}, self.record_name, self.record_content
+            )
+        patched_time_sleep.assert_called_once_with(2)
+
+    def test_set_txt_rrset_throttling_no_retry(self):
+        self.adapter.register_uri(
+            'PUT',
+            f"{FAKE_ENDPOINT}/domains/{DOMAIN}/rrsets/",
+            [
+                dict(status_code=429),  # no Retry-After header
+            ]
+        )
+        with self.assertRaises(errors.PluginError):
+            self.client.set_txt_rrset(
+                {'name': DOMAIN, 'minimum_ttl': self.record_ttl}, self.record_name, self.record_content
+            )
+        self.adapter.register_uri(
+            'PUT',
+            f"{FAKE_ENDPOINT}/domains/{DOMAIN}/rrsets/",
+            [
+                dict(status_code=429, headers={'Retry-After': 'asdf'}),  # Retry-After header not int
+            ]
         )
         with self.assertRaises(errors.PluginError):
             self.client.set_txt_rrset(

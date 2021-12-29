@@ -1,6 +1,7 @@
 """DNS Authenticator for deSEC."""
 import json
 import logging
+import time
 
 import requests
 import zope.interface
@@ -86,8 +87,27 @@ class _DesecConfigClient(object):
         self.session.headers["Authorization"] = f"Token {token}"
         self.session.headers["Content-Type"] = "application/json"
 
+    @staticmethod
+    def desec_request(method, **kwargs):
+        response: requests.Response = method(**kwargs)
+        if response.status_code == 429 and 'Retry-After' in response.headers:
+            try:
+                cooldown = int(response.headers['Retry-After'])
+            except ValueError:
+                return response
+            logger.debug(f"deSEC API limit reached. Retrying request after {cooldown}s.")
+            time.sleep(cooldown)
+            response = method(**kwargs)
+        return response
+
+    def desec_get(self, **kwargs):
+        return self.desec_request(self.session.get, **kwargs)
+
+    def desec_put(self, **kwargs):
+        return self.desec_request(self.session.put, **kwargs)
+
     def get_authoritative_zone(self, qname):
-        response = self.session.get(url=f"{self.endpoint}/domains/?owns_qname={qname}")
+        response = self.desec_get(url=f"{self.endpoint}/domains/?owns_qname={qname}")
         self._check_response_status(response)
         data = self._response_json(response)
         try:
@@ -97,7 +117,7 @@ class _DesecConfigClient(object):
 
     def get_txt_rrset(self, zone, subname):
         domain = zone['name']
-        response = self.session.get(
+        response = self.desec_get(
             url=f"{self.endpoint}/domains/{domain}/rrsets/{subname}/TXT/",
         )
 
@@ -109,7 +129,7 @@ class _DesecConfigClient(object):
 
     def set_txt_rrset(self, zone, subname, records):
         domain = zone['name']
-        response = self.session.put(
+        response = self.desec_put(
             url=f"{self.endpoint}/domains/{domain}/rrsets/",
             data=json.dumps([
                 {"subname": subname, "type": "TXT", "ttl": zone['minimum_ttl'], "records": records},
@@ -125,8 +145,8 @@ class _DesecConfigClient(object):
         elif response.status_code == 404:
             raise errors.PluginError(f"Not found ({kwargs}): {response.content}")
         elif response.status_code == 429:
-            raise errors.PluginError(f"deSEC throttled your request. Please run certbot for various domains at "
-                                     f"different times. {response.content}")
+            raise errors.PluginError(f"deSEC throttled your request even after we waited the prescribed cool-down "
+                                     f"time. Did you use the API in parallel? {response.content}")
         elif response.status_code >= 500:
             raise errors.PluginError(f"deSEC API server error (status {response.status_code}): {response.content}")
         else:
