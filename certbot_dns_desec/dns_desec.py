@@ -21,7 +21,7 @@ class Authenticator(dns_common.DNSAuthenticator):
     """
 
     description = "Obtain certificates using a DNS TXT record (if you are using deSEC.io for DNS)."
-    DEFAULT_ENDPOINT = "https://desec.io/api/v1/"
+    DEFAULT_ENDPOINT = "https://desec.io/api/v1"
 
     def __init__(self, *args, **kwargs):
         super(Authenticator, self).__init__(*args, **kwargs)
@@ -80,7 +80,7 @@ class _DesecConfigClient(object):
 
     def __init__(self, endpoint, token):
         logger.debug("creating _DesecConfigClient")
-        self.endpoint = endpoint
+        self.endpoint = endpoint.rstrip('/')
         self.token = token
         self.session = requests.Session()
         self.session.headers["Authorization"] = f"Token {token}"
@@ -98,7 +98,7 @@ class _DesecConfigClient(object):
     def get_txt_rrset(self, zone, subname):
         domain = zone['name']
         response = self.session.get(
-            url=f"{self.endpoint}/domains/{domain}/rrsets/{subname}/TXT",
+            url=f"{self.endpoint}/domains/{domain}/rrsets/{subname}/TXT/",
         )
 
         if response.status_code == 404:
