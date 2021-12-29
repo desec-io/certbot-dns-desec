@@ -30,7 +30,7 @@ class Authenticator(dns_common.DNSAuthenticator):
     @classmethod
     def add_parser_arguments(cls, add):  # pylint: disable=arguments-differ
         super(Authenticator, cls).add_parser_arguments(
-            add, default_propagation_seconds=5  # TODO
+            add, default_propagation_seconds=65  # TODO decrease after deSEC fixed their NOTIFY problem
         )
         add("credentials", help="deSEC credentials INI file.")
 
