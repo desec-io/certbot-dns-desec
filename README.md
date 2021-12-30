@@ -77,7 +77,7 @@ To acquire a single certificate for both ``example.com`` and ``*.example.com``:
 
 ## Development and Testing
 
-To test this, install the virtual environment (venv) for this repository and activate it.
+To test certbot-dns-desec, create a virtual environment at `venv/` for this repository and activate it.
 Register a domain `$DOMAIN` with desec.io, and obtain a DNS management token `$TOKEN`. Then run
 
     python3 -m pip install .
@@ -86,7 +86,7 @@ Register a domain `$DOMAIN` with desec.io, and obtain a DNS management token `$T
     EMAIL=youremail@example.com
     echo "dns_desec_token = $TOKEN" > desec-secret.ini
     chmod 600 desec-secret.ini
-    certbot \
+    ./venv/bin/certbot \
         --config-dir tmp/certbot/config \
         --logs-dir tmp/certbot/logs \
         --work-dir tmp/certbot/work \
