@@ -63,7 +63,7 @@ It accepts the following command line arguments:
 
 1. ``--dns-desec-credentials <file>`` Specifies the file holding the deSEC API credentials (required, see below).
 1. ``--dns-desec-propagation-seconds`` Waiting time for DNS to propagate before asking the ACME server to verify the
-    DNS record (default 65).
+    DNS record (default 80).
 
 
 ## Credentials File Format
