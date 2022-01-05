@@ -68,12 +68,9 @@ It accepts the following command line arguments:
 
 ## Credentials File Format
 
-An example ``credentials.ini`` file:
+The credentials file only holds the deSEC API access token:
 
     dns_desec_token = token
-
-Additionally, the URL of the deSEC API can be specified using the `dns_desec_endpoint` configuration option.
-`https://desec.io/api/v1/` is the default.
 
 
 ## Development and Testing
