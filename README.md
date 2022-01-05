@@ -12,14 +12,14 @@ challenge mechanism.
 To get certificates from Let's Encrypt, install certbot and this plugin.
 There are many ways to install certbot, this guide uses Python's `pip`:
 
-```
+```shell
 python3 -m pip install certbot certbot-dns-desec
 ```
 
 ## Prerequisites
 
-To get a Let's Encrypt certificate for your domain,
-you need an access token for the deSEC.io account that holds the domain you need the certificate for.
+To get a Let's Encrypt certificate for your domain `$DOMAIN`,
+you need an access token `$TOKEN` for the deSEC.io account that holds the domain you need the certificate for.
 Also make sure that your domain name has been delegated to deSEC according to deSEC's instructions.
 
 
@@ -28,7 +28,7 @@ Also make sure that your domain name has been delegated to deSEC according to de
 To issue and renew certificates using `certbot-dns-desec`, an access token to your deSEC account is required.
 To store such a token in a secure location, use, e.g.:
 
-```
+```shell
 DOMAIN=example.com
 TOKEN=your-desec-access-token
 sudo mkdir /etc/letsencrypt/secrets/
@@ -42,7 +42,7 @@ The file location is just a suggestion and can be changed.
 
 With the credentials stored, you can apply for a wildcard certificate for your domain by using, e.g.,
 
-```
+```shell
 certbot certonly \
      --authenticator dns-desec \
      --dns-desec-credentials /etc/letsencrypt/secrets/$DOMAIN.ini \
@@ -78,7 +78,7 @@ The credentials file only holds the deSEC API access token:
 To test certbot-dns-desec, create a virtual environment at `venv/` for this repository and activate it.
 Register a domain `$DOMAIN` with desec.io, and obtain a DNS management token `$TOKEN`. Then run
 
-```
+```shell
 python3 -m pip install .
 TOKEN=token-you-obtained-from-desec-io
 DOMAIN=domain-you-registered-at-desec-io
