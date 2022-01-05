@@ -1,38 +1,72 @@
-# certbot-dns-desec
+# certbot-dns-desec: Get Let's Encrypt Certificates for Domains Hosted at deSEC
 
 ![main branch CI test status](https://github.com/desec-io/certbot-dns-desec/workflows/Tests/badge.svg?branch=main)
 [![pypi badge](https://img.shields.io/pypi/v/certbot-dns-desec.svg)](https://pypi.org/project/certbot-dns-desec/)
 
-⚠ This plugin is under development, API and CLI might change! ⚠
+Certbot plugin to obtain TLS certificates from Let's Encrypt for domains hosted with deSEC.io, using the DNS challenge
+challenge mechanism.
 
-[deSEC](https://desec.io/) DNS Authenticator plugin for [Certbot](https://certbot.eff.org/)
-
-This plugin automates the process of completing a ``dns-01`` challenge by
-creating, and subsequently removing, TXT records using the deSEC DNS API.
-
-## Configuration of deSEC
-
-Log in at [deSEC](https://desec.io/) and create the domain you would like to use and a token for DNS management.
 
 ## Installation
 
-This certbot plugin can be installed using `pip`:
+To get certificates from Let's Encrypt, install certbot and this plugin.
+There are many ways to install certbot, this guide uses Python's `pip`:
 
-    python3 -m pip install certbot-dns-desec
+```
+python3 -m pip install certbot certbot-dns-desec
+```
+
+## Prerequisites
+
+To get a Let's Encrypt certificate for your domain,
+you need an access token for the deSEC.io account that holds the domain you need the certificate for.
+Also make sure that your domain name has been delegated to deSEC according to deSEC's instructions.
 
 
-## Command Line Interface
+## Issue Certificate
 
-To start using DNS authentication with deSEC, pass the following arguments on
-certbot's command line:
+To issue and renew certificates using `certbot-dns-desec`, an access token to your deSEC account is required.
+To store such a token in a secure location, use, e.g.:
 
-1. ``--authenticator dns-desec`` Selects the authenticator plugin.
+```
+DOMAIN=example.com
+TOKEN=your-desec-access-token
+sudo mkdir /etc/letsencrypt/secrets/
+sudo chmod 700 /etc/letsencrypt/secrets/
+echo "dns_desec_token = $TOKEN" | sudo tee /etc/letsencrypt/secrets/$DOMAIN.ini
+sudo chmod 600 /etc/letsencrypt/.secrets/$DOMAIN.ini
+```
+
+Adjust `$DOMAIN` and `$TOKEN` according to your domain and deSEC access token, respectively.
+The file location is just a suggestion and can be changed.
+
+With the credentials stored, you can apply for a wildcard certificate for your domain by using, e.g.,
+
+```
+certbot certonly \
+     --authenticator dns-desec \
+     --dns-desec-credentials /etc/letsencrypt/secrets/$DOMAIN.ini \
+     -d "$DOMAIN" \
+     -d "*.$DOMAIN"
+```
+
+In this command, `--authenticator dns-desec` activates the `certbot-dns-desec` plugin;
+the `--dns-desec-credentials` argument provides the deSEC access token location to the plugin.
+These flags can be combined with more sophisticated usages of certbot, e.g. to automatically reload servers after the
+renewal process.
+
+
+## CLI Interface
+
+This plugin is activated by passing the ``--authenticator dns-desec`` argument to certbot.
+It accepts the following command line arguments:
+
 1. ``--dns-desec-credentials <file>`` Specifies the file holding the deSEC API credentials (required, see below).
 1. ``--dns-desec-propagation-seconds`` Waiting time for DNS to propagate before asking the ACME server to verify the
-    DNS record (default 5).
+    DNS record (default 65).
 
 
-## deSEC API Credentials
+## Credentials File Format
 
 An example ``credentials.ini`` file:
 
@@ -41,62 +75,31 @@ An example ``credentials.ini`` file:
 Additionally, the URL of the deSEC API can be specified using the `dns_desec_endpoint` configuration option.
 `https://desec.io/api/v1/` is the default.
 
-The path to this file can be provided interactively or using the
-``--dns-desec-credentials`` command-line argument. Certbot
-records the path to this file for use during renewal, but does not store the
-file's contents.
-
-**CAUTION:** You should protect these API token as you would the
-password to your deSEC account. Users who can read this file can use these
-credentials to issue API calls on your behalf. Users who can cause
-Certbot to run using these credentials can complete a ``dns-01`` challenge to
-acquire new certificates or revoke existing certificates for associated
-domains, even if those domains aren't being managed by this server.
-
-Certbot will emit a warning if it detects that the credentials file can be
-accessed by other users on your system. The warning reads "Unsafe permissions
-on credentials configuration file", followed by the path to the credentials
-file. This warning will be emitted each time Certbot uses the credentials file,
-including for renewal, and cannot be silenced except by addressing the issue
-(e.g., by using a command like ``chmod 600`` to restrict access to the file).
-
-
-## Example Usage
-
-To acquire a single certificate for both ``example.com`` and ``*.example.com``:
-
-    certbot certonly \
-         --authenticator dns-desec \
-         --dns-desec-credentials /etc/letsencrypt/.secrets/domain.tld.ini \
-         --server https://acme-v02.api.letsencrypt.org/directory \
-         --agree-tos \
-         --rsa-key-size 4096 \
-         -d 'example.com' \
-         -d '*.example.com'
-
 
 ## Development and Testing
 
 To test certbot-dns-desec, create a virtual environment at `venv/` for this repository and activate it.
 Register a domain `$DOMAIN` with desec.io, and obtain a DNS management token `$TOKEN`. Then run
 
-    python3 -m pip install .
-    TOKEN=token-you-obtained-from-desec-io
-    DOMAIN=domain-you-registered-at-desec-io
-    EMAIL=youremail@example.com
-    echo "dns_desec_token = $TOKEN" > desec-secret.ini
-    chmod 600 desec-secret.ini
-    ./venv/bin/certbot \
-        --config-dir tmp/certbot/config \
-        --logs-dir tmp/certbot/logs \
-        --work-dir tmp/certbot/work \
-        --test-cert \
-        -d $DOMAIN -d "*.$DOMAIN" \
-        --authenticator dns-desec \
-        --dns-desec-credentials desec-secret.ini \
-        --non-interactive --agree-tos \
-        --email $EMAIL \
-        certonly
+```
+python3 -m pip install .
+TOKEN=token-you-obtained-from-desec-io
+DOMAIN=domain-you-registered-at-desec-io
+EMAIL=youremail@example.com
+echo "dns_desec_token = $TOKEN" > desec-secret.ini
+chmod 600 desec-secret.ini
+./venv/bin/certbot \
+    --config-dir tmp/certbot/config \
+    --logs-dir tmp/certbot/logs \
+    --work-dir tmp/certbot/work \
+    --test-cert \
+    -d $DOMAIN -d "*.$DOMAIN" \
+    --authenticator dns-desec \
+    --dns-desec-credentials desec-secret.ini \
+    --non-interactive --agree-tos \
+    --email $EMAIL \
+    certonly
+```
 
 
 ## Maintenance: Prepare New Release
