@@ -19,11 +19,12 @@ python3 -m pip install certbot certbot-dns-desec
 ## Prerequisites
 
 To get a Let's Encrypt certificate for your domain `$DOMAIN`,
-you need an access token `$TOKEN` for the deSEC.io account that holds the domain you need the certificate for.
-Also make sure that your domain name has been delegated to deSEC according to deSEC's instructions.
+you need a deSEC API token `$TOKEN` with sufficient permission for performing the required DNS changes on your domain.
+Also make sure that your domain name has been delegated to deSEC
+(in other words: make sure that the parent registry has the right NS records).
 
 
-## Issue Certificate
+## Request Certificate
 
 To issue and renew certificates using `certbot-dns-desec`, an access token to your deSEC account is required.
 To store such a token in a secure location, use, e.g.:
@@ -40,7 +41,7 @@ sudo chmod 600 /etc/letsencrypt/.secrets/$DOMAIN.ini
 Adjust `$DOMAIN` and `$TOKEN` according to your domain and deSEC access token, respectively.
 The file location is just a suggestion and can be changed.
 
-With the credentials stored, you can apply for a wildcard certificate for your domain by using, e.g.,
+With the credentials stored, you can request a wildcard certificate for your domain by using, e.g.,
 
 ```shell
 certbot certonly \
@@ -52,8 +53,9 @@ certbot certonly \
 
 In this command, `--authenticator dns-desec` activates the `certbot-dns-desec` plugin;
 the `--dns-desec-credentials` argument provides the deSEC access token location to the plugin.
-These flags can be combined with more sophisticated usages of certbot, e.g. to automatically reload servers after the
-renewal process.
+These flags can be combined with more sophisticated usages of certbot,
+e.g. to automatically reload servers after the renewal process.
+Such functionality is independent of this plugin; for details, see the certbot documentation.
 
 
 ## CLI Interface
@@ -63,7 +65,7 @@ It accepts the following command line arguments:
 
 1. ``--dns-desec-credentials <file>`` Specifies the file holding the deSEC API credentials (required, see below).
 1. ``--dns-desec-propagation-seconds`` Waiting time for DNS to propagate before asking the ACME server to verify the
-    DNS record (default 80).
+    DNS record.
 
 
 ## Credentials File Format
