@@ -23,6 +23,12 @@ you need a deSEC API token `$TOKEN` with sufficient permission for performing th
 Also make sure that your domain name has been delegated to deSEC
 (in other words: make sure that the parent registry has the right NS records).
 
+If you don't have a token yet, an easy way to obtain one it by logging into your account at [deSEC.io](//desec.io),
+navigate to "Token Management" and create a new one.
+It's good practice to restrict the token permissions as much as possible,
+e.g. by setting the maximum unused period to four months.
+This way, the token will expire if it is not continuously used to renew your certificate.
+Tokens can also be created [using the deSEC API](//desec.readthedocs.io/en/latest/auth/tokens.html#creating-a-token).
 
 ## Request Certificate
 
