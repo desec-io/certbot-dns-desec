@@ -46,7 +46,7 @@ class Authenticator(dns_common.DNSAuthenticator):
             "credentials",
             "deSEC credentials INI file",
             {
-                # "endpoint": "URL of the deSEC API.", # TODO add support for different endpoints
+                "endpoint": "URL of the deSEC API.",
                 "token": "Access token for deSEC API.",
             },
         )
