@@ -19,6 +19,8 @@ FAKE_ENDPOINT = "mock://endpoint"
 class AuthenticatorTest(
     test_util.TempDirTestCase, dns_test_common.BaseAuthenticatorTest
 ):
+    TXT = {'"preexisting" "TXT record 1/2"', '"preexisting TXT record 2/2"'}
+
     def setUp(self):
         super(AuthenticatorTest, self).setUp()
 
@@ -43,17 +45,19 @@ class AuthenticatorTest(
 
         self.mock_client = mock.MagicMock()
         self.mock_client.get_authoritative_zone.return_value = self.mock_zone
-        self.mock_client.get_txt_rrset.return_value = set()
+        self.mock_client.get_txt_rrset.return_value = self.TXT
         # _get_desec_client | pylint: disable=protected-access
         self.auth._get_desec_client = mock.MagicMock(return_value=self.mock_client)
 
     @test_util.patch_display_util()
     def test_perform(self, unused_mock_get_utility):
         self.auth.perform([self.achall])
+        validation = self.achall.validation(self.achall.account_key)
 
         self.mock_client.get_authoritative_zone.assert_called_once_with(f'_acme-challenge.{DOMAIN}')
         self.mock_client.get_txt_rrset.assert_called_once_with(self.mock_zone, "_acme-challenge")
-        self.mock_client.set_txt_rrset.assert_called_once_with(self.mock_zone, "_acme-challenge", mock.ANY)
+        self.mock_client.set_txt_rrset.assert_called_once_with(self.mock_zone, "_acme-challenge",
+                                                               self.TXT | {f'"{validation}"'})
 
     def test_cleanup(self):
         # _attempt_cleanup | pylint: disable=protected-access
@@ -62,7 +66,7 @@ class AuthenticatorTest(
 
         self.mock_client.get_authoritative_zone.assert_called_once_with(f'_acme-challenge.{DOMAIN}')
         self.mock_client.get_txt_rrset.assert_called_once_with(self.mock_zone, "_acme-challenge")
-        self.mock_client.set_txt_rrset.assert_called_once_with(self.mock_zone, "_acme-challenge", mock.ANY)
+        self.mock_client.set_txt_rrset.assert_called_once_with(self.mock_zone, "_acme-challenge", self.TXT)
 
 
 class DesecConfigClientTest(unittest.TestCase):

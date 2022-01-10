@@ -56,7 +56,9 @@ class Authenticator(dns_common.DNSAuthenticator):
         zone = client.get_authoritative_zone(validation_name)
         subname = validation_name.rsplit(zone['name'], 1)[0].rstrip('.')
         records = client.get_txt_rrset(zone, subname)
-        records = list(set_operator(records, {f'"{validation}"'}))
+        logger.debug(f"Current TXT records: {records}")
+        records = set_operator(records, {f'"{validation}"'})
+        logger.debug(f"Setting TXT records: {records}")
         client.set_txt_rrset(zone, subname, records)
 
     def _perform(self, domain, validation_name, validation):
@@ -65,7 +67,7 @@ class Authenticator(dns_common.DNSAuthenticator):
 
     def _cleanup(self, domain, validation_name, validation):
         logger.debug(f"Authenticator._cleanup: {domain}, {validation_name}, {validation}")
-        self._desec_work(domain, validation_name, validation, set.intersection)
+        self._desec_work(domain, validation_name, validation, set.difference)
 
     def _get_desec_client(self):
         return _DesecConfigClient(
@@ -127,12 +129,12 @@ class _DesecConfigClient(object):
         self._check_response_status(response, domain=domain)
         return set(self._response_json(response).get('records', set()))
 
-    def set_txt_rrset(self, zone, subname, records):
+    def set_txt_rrset(self, zone, subname, records: set):
         domain = zone['name']
         response = self.desec_put(
             url=f"{self.endpoint}/domains/{domain}/rrsets/",
             data=json.dumps([
-                {"subname": subname, "type": "TXT", "ttl": zone['minimum_ttl'], "records": records},
+                {"subname": subname, "type": "TXT", "ttl": zone['minimum_ttl'], "records": list(records)},
             ]),
         )
         return self._check_response_status(response, domain=domain)
