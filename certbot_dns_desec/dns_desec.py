@@ -39,10 +39,9 @@ class Authenticator(dns_common.DNSAuthenticator):
 
     def _setup_credentials(self):
         self.credentials = self._configure_credentials(
-            "credentials",
-            "deSEC credentials INI file",
-            {
-                "endpoint": "URL of the deSEC API.",
+            key="credentials",
+            label="deSEC credentials INI file",
+            required_variables={
                 "token": "Access token for deSEC API.",
             },
         )

@@ -85,7 +85,6 @@ An example ``credentials.ini`` file:
 Additionally, the URL of the deSEC API can be specified using the `dns_desec_endpoint` configuration option.
 `https://desec.io/api/v1/` is the default.
 
-
 ## Development and Testing
 
 To test certbot-dns-desec, create a virtual environment at `venv/` for this repository and activate it.
