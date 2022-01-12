@@ -1,0 +1,106 @@
+name: Obtain Certificate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: desec-test-account
+    strategy:
+      # You can use PyPy versions in python-version.
+      # For example, pypy2 and pypy3
+      matrix:
+        python-version: [
+          '3.7',
+          '3.8',
+          '3.9',
+        ]
+        certbot-version: [
+          # '0.40.0',  # at the time of writing, the latest version for Ubuntu 20.04
+          # '1.16.0',  # some problem with the plugin interface, see #13
+          # '1.17.0',  # broken
+          '1.18.0',  # working
+          '1.19.0',
+          '1.20.0',
+          '1.21.0',
+          'latest',  # latest
+        ]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install
+      run: |
+        sudo apt-get install -y dnsutils
+        pip3 install .
+        if [[ $CERTBOT_VERSION != "latest" ]]
+        then
+          pip3 install --upgrade certbot~=$CERTBOT_VERSION
+        fi
+      env:
+        CERTBOT_VERSION: ${{ matrix.certbot-version }}
+
+    - name: Create domain
+      shell: bash
+      run: |
+        PYTHON=$(echo $PYTHON | sed "s/\./-/g")
+        CERTBOT=$(echo $CERTBOT | sed "s/\./-/g")
+        curl -X POST https://desec.io/api/v1/domains/ \
+        --header "Authorization: Token $TOKEN" \
+        --header "Content-Type: application/json" --data @- <<< \
+        "{\"name\": \"certbot-$CERTBOT-python-$PYTHON-$DOMAIN\"}"
+        sleep 80  # wait for deSEC to propagate changes
+      env:
+        DOMAIN: ${{secrets.DESEC_DOMAIN}}
+        CERTBOT: ${{matrix.certbot-version}}
+        PYTHON: ${{matrix.python-version}}
+        TOKEN: ${{secrets.DESEC_TOKEN}}
+
+    - name: Setup Credentials
+      run: 'echo "dns_desec_token = $TOKEN" > desec-secret.ini'
+      shell: bash
+      env:
+        TOKEN: ${{secrets.DESEC_TOKEN}}
+
+    - name: Get Cert
+      run: |
+        PYTHON=$(echo $PYTHON | sed "s/\./-/g")
+        CERTBOT=$(echo $CERTBOT | sed "s/\./-/g")
+        certbot certonly \
+        --config-dir tmp/certbot/config \
+        --logs-dir tmp/certbot/logs \
+        --work-dir tmp/certbot/work \
+        --authenticator dns-desec \
+        --email $EMAIL \
+        --dns-desec-credentials desec-secret.ini \
+        --server https://acme-v02.api.letsencrypt.org/directory \
+        --agree-tos \
+        --dry-run \
+        -d "certbot-$CERTBOT-python-$PYTHON-$DOMAIN" \
+        -d "*.certbot-$CERTBOT-python-$PYTHON-$DOMAIN"
+      shell: bash
+      env:
+        DOMAIN: ${{secrets.DESEC_DOMAIN}}
+        EMAIL: ${{secrets.DESEC_EMAIL}}
+        CERTBOT: ${{matrix.certbot-version}}
+        PYTHON: ${{matrix.python-version}}
+
+    - name: Query TXT record and show log
+      if: ${{ failure() }}
+      run: |
+        PYTHON=$(echo $PYTHON | sed "s/\./-/g")
+        CERTBOT=$(echo $CERTBOT | sed "s/\./-/g")
+        dig @ns1.desec.io TXT _acme-challenge.certbot-$CERTBOT-python-$PYTHON-$DOMAIN
+        dig @ns2.desec.org TXT _acme-challenge.certbot-$CERTBOT-python-$PYTHON-$DOMAIN
+        cat tmp/certbot/logs/letsencrypt.log
+      env:
+        DOMAIN: ${{secrets.DESEC_DOMAIN}}
+        CERTBOT: ${{matrix.certbot-version}}
+        PYTHON: ${{matrix.python-version}}
