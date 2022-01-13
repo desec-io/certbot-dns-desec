@@ -20,14 +20,12 @@ jobs:
           '3.9',
         ]
         certbot-version: [
-          # '0.40.0',  # at the time of writing, the latest version for Ubuntu 20.04
-          # '1.16.0',  # some problem with the plugin interface, see #13
-          # '1.17.0',  # broken
-          '1.18.0',  # working
-          '1.19.0',
+          # TODO at the time of writing, versions earlier than 1.14, including '0.40.0', the latest version for Ubuntu
+          #  20.04, are broken because ImportError: cannot import name 'IO' from 'acme.magic_typing'
+          #  (venv/lib/python3.8/site-packages/acme/magic_typing.py)
+          '1.14.0',
           '1.20.0',
-          '1.21.0',
-          'latest',  # latest
+          'latest',
         ]
 
     steps:

@@ -4,12 +4,9 @@ from setuptools import find_packages
 version = "1.1.0"
 
 install_requires = [
-    "acme>=0.29.0",
-    "certbot>=0.34.0",
+    "certbot>=1.14.0",
     "setuptools",
     "requests",
-    "mock",
-    "requests-mock",
 ]
 
 # read the contents of your README file
