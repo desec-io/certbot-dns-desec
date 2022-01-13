@@ -4,13 +4,17 @@ import logging
 import time
 
 import requests
+import zope.interface
 from certbot import errors
+from certbot import interfaces
 from certbot.plugins import dns_common
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
+@zope.interface.implementer(interfaces.IAuthenticator)  # needed for compatibility with older certbots, see #13
+@zope.interface.provider(interfaces.IPluginFactory)  # needed for compatibility with older certbots, see #13
 class Authenticator(dns_common.DNSAuthenticator):
     """DNS Authenticator for deSEC
 
