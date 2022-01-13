@@ -87,15 +87,17 @@ class _DesecConfigClient(object):
 
     @staticmethod
     def desec_request(method, **kwargs):
-        response: requests.Response = method(**kwargs)
-        if response.status_code == 429 and 'Retry-After' in response.headers:
-            try:
-                cooldown = int(response.headers['Retry-After'])
-            except ValueError:
+        for _ in range(3):
+            response: requests.Response = method(**kwargs)
+            if response.status_code == 429 and 'Retry-After' in response.headers:
+                try:
+                    cooldown = int(response.headers['Retry-After'])
+                except ValueError:
+                    return response
+                logger.debug(f"deSEC API limit reached. Retrying request after {cooldown}s.")
+                time.sleep(cooldown)
+            else:
                 return response
-            logger.debug(f"deSEC API limit reached. Retrying request after {cooldown}s.")
-            time.sleep(cooldown)
-            response = method(**kwargs)
         return response
 
     def desec_get(self, **kwargs):

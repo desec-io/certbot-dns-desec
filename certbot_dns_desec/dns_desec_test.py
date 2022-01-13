@@ -166,13 +166,14 @@ class DesecConfigClientTest(unittest.TestCase):
             f"{FAKE_ENDPOINT}/domains/{DOMAIN}/rrsets/",
             [
                 dict(status_code=429, headers={'Retry-After': '2'}),
+                dict(status_code=429, headers={'Retry-After': '31'}),
                 dict(status_code=200),
             ]
         )
         self.client.set_txt_rrset(
             {'name': DOMAIN, 'minimum_ttl': self.record_ttl}, self.record_name, self.record_content
         )
-        patched_time_sleep.assert_called_once_with(2)
+        self.assertEqual(patched_time_sleep.call_args_list, [mock.call(2), mock.call(31)])
 
     @patch('time.sleep', return_value=None)
     def test_set_txt_rrset_throttling_retry_fail(self, patched_time_sleep):
@@ -181,14 +182,13 @@ class DesecConfigClientTest(unittest.TestCase):
             f"{FAKE_ENDPOINT}/domains/{DOMAIN}/rrsets/",
             [
                 dict(status_code=429, headers={'Retry-After': '2'}),
-                dict(status_code=429, headers={'Retry-After': '2'}),
-            ]
+            ] * 4
         )
         with self.assertRaises(errors.PluginError):
             self.client.set_txt_rrset(
                 {'name': DOMAIN, 'minimum_ttl': self.record_ttl}, self.record_name, self.record_content
             )
-        patched_time_sleep.assert_called_once_with(2)
+        self.assertEqual(patched_time_sleep.call_args_list, [mock.call(2)] * 3)
 
     def test_set_txt_rrset_throttling_no_retry(self):
         self.adapter.register_uri(
