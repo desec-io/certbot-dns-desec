@@ -40,10 +40,10 @@ To store such a token in a secure location, use, e.g.:
 ```shell
 DOMAIN=example.com
 TOKEN=your-desec-access-token
-sudo mkdir /etc/letsencrypt/secrets/
+sudo mkdir -p /etc/letsencrypt/secrets/
 sudo chmod 700 /etc/letsencrypt/secrets/
 echo "dns_desec_token = $TOKEN" | sudo tee /etc/letsencrypt/secrets/$DOMAIN.ini
-sudo chmod 600 /etc/letsencrypt/.secrets/$DOMAIN.ini
+sudo chmod 600 /etc/letsencrypt/secrets/$DOMAIN.ini
 ```
 
 Adjust `$DOMAIN` and `$TOKEN` according to your domain and deSEC access token, respectively.
