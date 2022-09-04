@@ -26,6 +26,11 @@ After some time and if nothing went wrong the result will be certbot-dns-desec_1
 On a Debian GNU/Linux 11 (Server) you will be able to install your own snap like this:
 
 ```shell
+sudo apt remove certbot
+sudo snap install core
+sudo snap refresh core
+sudo snap install certbot --classic
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
 sudo snap install certbot-dns-desec_1.2.0_amd64.snap --dangerous --devmode
 sudo snap set certbot trust-plugin-with-root=ok
 sudo snap connect certbot:plugin certbot-dns-desec
