@@ -1,0 +1,7 @@
+# This file has to be in sync with requirements.txt!
+#
+# Maybe using tools/pinning/current/repin.sh form the Certbot project could be cleaner?
+# But this simple, quick and dirty solution seems to work too!?
+flake8
+mock
+requests-mock
