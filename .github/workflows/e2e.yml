@@ -18,14 +18,16 @@ jobs:
           '3.7',
           '3.8',
           '3.9',
+          '3.10',
+          '3.11',
         ]
         certbot-version: [
           # TODO at the time of writing, versions earlier than 1.14, including '0.40.0', the latest version for Ubuntu
           #  20.04, are broken because ImportError: cannot import name 'IO' from 'acme.magic_typing'
           #  (venv/lib/python3.8/site-packages/acme/magic_typing.py)
           '1.14.0',
-          '1.20.0',
-          'latest',
+          '1.32.0',
+          '2.0.0',
         ]
 
     steps:
