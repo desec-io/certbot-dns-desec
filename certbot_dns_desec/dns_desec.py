@@ -4,17 +4,31 @@ import logging
 import time
 
 import requests
-import zope.interface
-from certbot import errors
 from certbot import interfaces
+try:
+    # needed for compatibility with older certbots, see #13
+    import zope.interface
+    zope_interface_implementer = zope.interface.implementer
+    zope_interface_provider = zope.interface.provider
+    i_authenticator = interfaces.IAuthenticator
+    i_plugin_factory = interfaces.IPluginFactory
+except ImportError:
+    def get_noop_dec(*args):
+        def noop_dec(obj):
+            return obj
+        return noop_dec
+    zope_interface_implementer = zope_interface_provider = get_noop_dec
+    i_authenticator = i_plugin_factory = None
+
+from certbot import errors
 from certbot.plugins import dns_common
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-@zope.interface.implementer(interfaces.IAuthenticator)  # needed for compatibility with older certbots, see #13
-@zope.interface.provider(interfaces.IPluginFactory)  # needed for compatibility with older certbots, see #13
+@zope_interface_implementer(i_authenticator)  # needed for compatibility with older certbots, see #13
+@zope_interface_provider(i_plugin_factory)  # needed for compatibility with older certbots, see #13
 class Authenticator(dns_common.DNSAuthenticator):
     """DNS Authenticator for deSEC
 

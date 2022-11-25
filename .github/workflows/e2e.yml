@@ -43,6 +43,7 @@ jobs:
         if [[ $CERTBOT_VERSION != "latest" ]]
         then
           pip3 install --upgrade certbot~=$CERTBOT_VERSION
+          pip3 install --upgrade acme~=$CERTBOT_VERSION
         fi
       env:
         CERTBOT_VERSION: ${{ matrix.certbot-version }}
