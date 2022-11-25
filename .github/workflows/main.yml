@@ -13,7 +13,18 @@ jobs:
       # You can use PyPy versions in python-version.
       # For example, pypy2 and pypy3
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [
+          '3.7',
+          '3.8',
+          '3.9',
+          '3.10',
+          '3.11',
+        ]
+        certbot-version: [
+          # '1.14.0',  # tests use features not available in this version
+          '1.32.0',
+          '2.0.0',
+        ]
 
     steps:
     - uses: actions/checkout@v2
@@ -25,7 +36,14 @@ jobs:
       run: |
         pip3 install -r requirements.txt
         pip3 install .
+        if [[ $CERTBOT_VERSION != "latest" ]]
+        then
+          pip3 install --upgrade certbot~=$CERTBOT_VERSION
+          pip3 install --upgrade acme~=$CERTBOT_VERSION
+        fi
         pip3 freeze
+      env:
+        CERTBOT_VERSION: ${{ matrix.certbot-version }}
 
     - name: flake8 Linter
       run:  python3 -m flake8 certbot_dns_desec
