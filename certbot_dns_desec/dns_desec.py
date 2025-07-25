@@ -135,7 +135,7 @@ class _DesecConfigClient(object):
     def get_txt_rrset(self, zone, subname):
         domain = zone['name']
         response = self.desec_get(
-            url=f"{self.endpoint}/domains/{domain}/rrsets/{subname}/TXT/",
+            url=f"{self.endpoint}/domains/{domain}/rrsets/{subname}.../TXT/",
         )
 
         if response.status_code == 404:
