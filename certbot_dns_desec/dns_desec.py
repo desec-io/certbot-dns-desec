@@ -3,6 +3,7 @@ import json
 import logging
 import time
 
+import dns.resolver
 import requests
 from certbot import interfaces
 try:
@@ -66,6 +67,14 @@ class Authenticator(dns_common.DNSAuthenticator):
 
     def _desec_work(self, domain, validation_name, validation, set_operator):
         client = self._get_desec_client()
+        try:
+            for _ in range(7):
+                validation_name = dns.resolver.resolve(validation_name,'CNAME')[0].target
+                logger.debug(f"CNAME lookup result: {validation_name}")
+        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer) as e:
+            pass
+        if isinstance(validation_name, dns.name.Name):
+            validation_name = validation_name.to_text().rstrip('.')
         zone = client.get_authoritative_zone(validation_name)
         subname = validation_name.rsplit(zone['name'], 1)[0].rstrip('.')
         records = client.get_txt_rrset(zone, subname)
