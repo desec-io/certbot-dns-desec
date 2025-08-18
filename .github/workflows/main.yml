@@ -14,16 +14,16 @@ jobs:
       # For example, pypy2 and pypy3
       matrix:
         python-version: [
-          '3.7',
-          '3.8',
           '3.9',
           '3.10',
           '3.11',
+          '3.12',
+          '3.13',
         ]
         certbot-version: [
-          # '1.14.0',  # tests use features not available in this version
-          '1.32.0',
-          '2.0.0',
+          '2.7.0',
+          '3.3.0',
+          '4.2.0',
         ]
 
     steps:
@@ -38,8 +38,8 @@ jobs:
         pip3 install .
         if [[ $CERTBOT_VERSION != "latest" ]]
         then
-          pip3 install --upgrade certbot~=$CERTBOT_VERSION
-          pip3 install --upgrade acme~=$CERTBOT_VERSION
+          pip3 install certbot~=$CERTBOT_VERSION
+          pip3 install acme~=$CERTBOT_VERSION
         fi
         pip3 freeze
       env:

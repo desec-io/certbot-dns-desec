@@ -15,19 +15,16 @@ jobs:
       # For example, pypy2 and pypy3
       matrix:
         python-version: [
-          '3.7',
-          '3.8',
           '3.9',
           '3.10',
           '3.11',
+          '3.12',
+          '3.13',
         ]
         certbot-version: [
-          # TODO at the time of writing, versions earlier than 1.14, including '0.40.0', the latest version for Ubuntu
-          #  20.04, are broken because ImportError: cannot import name 'IO' from 'acme.magic_typing'
-          #  (venv/lib/python3.8/site-packages/acme/magic_typing.py)
-          '1.14.0',
-          '1.32.0',
-          '2.0.0',
+          '2.7.0',
+          '3.3.0',
+          '4.2.0',
         ]
 
     steps:
@@ -39,11 +36,13 @@ jobs:
     - name: Install
       run: |
         sudo apt-get install -y dnsutils
+        pip3 list
         pip3 install .
+        pip3 list
         if [[ $CERTBOT_VERSION != "latest" ]]
         then
-          pip3 install --upgrade certbot~=$CERTBOT_VERSION
-          pip3 install --upgrade acme~=$CERTBOT_VERSION
+          pip3 install certbot~=$CERTBOT_VERSION
+          pip3 install acme~=$CERTBOT_VERSION
         fi
       env:
         CERTBOT_VERSION: ${{ matrix.certbot-version }}

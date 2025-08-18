@@ -4,7 +4,9 @@ from setuptools import find_packages
 version = "1.2.1"
 
 install_requires = [
-    "certbot>=1.14.0",
+    "certbot>=2.7.0,<3",
+    "dnspython",
+    "josepy<2",
     "setuptools",
     "requests",
 ]
