@@ -69,9 +69,9 @@ class Authenticator(dns_common.DNSAuthenticator):
         client = self._get_desec_client()
         try:
             for _ in range(7):
-                validation_name = dns.resolver.resolve(validation_name,'CNAME')[0].target
+                validation_name = dns.resolver.resolve(validation_name, 'CNAME')[0].target
                 logger.debug(f"CNAME lookup result: {validation_name}")
-        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer) as e:
+        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
             pass
         if isinstance(validation_name, dns.name.Name):
             validation_name = validation_name.to_text().rstrip('.')
