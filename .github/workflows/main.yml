@@ -35,12 +35,11 @@ jobs:
     - name: Install Requirements
       run: |
         pip3 install -r requirements.txt
-        pip3 install .
         if [[ $CERTBOT_VERSION != "latest" ]]
         then
           pip3 install certbot~=$CERTBOT_VERSION
-          pip3 install acme~=$CERTBOT_VERSION
         fi
+        pip3 install .
         pip3 freeze
       env:
         CERTBOT_VERSION: ${{ matrix.certbot-version }}

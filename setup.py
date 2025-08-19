@@ -4,7 +4,7 @@ from setuptools import find_packages
 version = "1.3.0"
 
 install_requires = [
-    "certbot>=2.7.0,<3",
+    "certbot>=2.7.0",
     "dnspython",
     "josepy<2",
     "setuptools",
@@ -28,7 +28,7 @@ setup(
     author="Nils Wisiol",
     author_email="nils@desec.io",
     license="Apache License 2.0",
-    python_requires=">=3.7",
+    python_requires=">=3.9",
     packages=find_packages(),
     include_package_data=True,
     install_requires=install_requires,
