@@ -71,7 +71,7 @@ class Authenticator(dns_common.DNSAuthenticator):
             for _ in range(7):
                 validation_name = dns.resolver.resolve(validation_name, 'CNAME')[0].target
                 logger.debug(f"CNAME lookup result: {validation_name}")
-        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
+        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.resolver.NoResolverConfiguration):
             pass
         if isinstance(validation_name, dns.name.Name):
             validation_name = validation_name.to_text().rstrip('.')
