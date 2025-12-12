@@ -15,17 +15,24 @@ jobs:
       # For example, pypy2 and pypy3
       matrix:
         python-version: [
-          '3.9',
           '3.10',
           '3.11',
           '3.12',
           '3.13',
+          '3.14',
         ]
         certbot-version: [
           '2.11.1',
           '3.3.0',
           '4.2.0',
+          '5.1.0',
+          '5.2.2',
         ]
+        exclude:
+        - python-version: 3.14
+          certbot-version: 2.11.1
+        - python-version: 3.14
+          certbot-version: 3.3.0
 
     steps:
     - uses: actions/checkout@v2
