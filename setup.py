@@ -6,7 +6,6 @@ version = "1.3.2"
 install_requires = [
     "certbot",
     "dnspython",
-    "setuptools",
     "requests",
 ]
 
