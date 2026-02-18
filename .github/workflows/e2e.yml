@@ -79,6 +79,7 @@ jobs:
         --server https://acme-v02.api.letsencrypt.org/directory \
         --agree-tos \
         --dry-run \
+        --dns-desec-propagation-seconds 300 \
         -d "certbot-$CERTBOT-python-$PYTHON-$DOMAIN" \
         -d "*.certbot-$CERTBOT-python-$PYTHON-$DOMAIN"
       shell: bash
