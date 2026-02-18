@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    - cron: '37 13 19 * *'  # on the 19th of every month at 13:37
 
 jobs:
   build:
@@ -15,7 +18,6 @@ jobs:
       # For example, pypy2 and pypy3
       matrix:
         python-version: [
-          '3.9',
           '3.10',
           '3.11',
           '3.12',
@@ -77,6 +79,7 @@ jobs:
         --server https://acme-v02.api.letsencrypt.org/directory \
         --agree-tos \
         --dry-run \
+        --dns-desec-propagation-seconds 300 \
         -d "certbot-$CERTBOT-python-$PYTHON-$DOMAIN" \
         -d "*.certbot-$CERTBOT-python-$PYTHON-$DOMAIN"
       shell: bash
