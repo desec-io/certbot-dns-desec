@@ -2,9 +2,9 @@
 
 import json
 import unittest
+import unittest.mock as mock
 from unittest.mock import patch
 
-import mock
 import requests_mock
 from certbot import errors
 from certbot.compat import os
